@@ -13,5 +13,4 @@ RUN mkdir artifacts
 RUN cp -r --parents /usr/include/nanomsg/ artifacts \
     && cp --parents /usr/bin/nanocat artifacts \
     && cp --parents /usr/lib64/pkgconfig/nanomsg.pc artifacts \
-    && cp --parents /usr/lib64/libnanomsg* artifacts \
-    && cp /nanomsg-1.0-cp36-cp36m-linux_x86_64.whl artifacts \
+    && cp --parents /usr/lib64/libnanomsg* artifacts 
