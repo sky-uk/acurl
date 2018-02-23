@@ -10,7 +10,7 @@ RUN set -ex \
     && make \
     && make install
 RUN mkdir artifacts
-CMD cp -rv --parents /usr/include/nanomsg/ artifacts \
-    && cp -v --parents /usr/bin/nanocat artifacts \
-    && cp -v --parents /usr/lib64/pkgconfig/nanomsg.pc artifacts \
-    && cp -v --parents /usr/lib64/libnanomsg* artifacts \
+CMD cp -r --parents /usr/include/nanomsg/ artifacts \
+    && cp --parents /usr/bin/nanocat artifacts \
+    && cp --parents /usr/lib64/pkgconfig/nanomsg.pc artifacts \
+    && cp --parents /usr/lib64/libnanomsg* artifacts \
