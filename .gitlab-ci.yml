@@ -12,7 +12,7 @@ build_nanomsg:
     script: 
         - mkdir artifacts
         - docker build -t build_nanomsg -f BuildNanomsgDockerfile .
-        - docker run --rm --mount $PWD/artifacts/:/artifacts/ build_nanomsg /bin/true
+        - docker run --rm --mount type=bind src=$PWD/artifacts/ target=/artifacts/ build_nanomsg /bin/true
         - ls $PWD/artifacts
     artifacts:
         when: always
