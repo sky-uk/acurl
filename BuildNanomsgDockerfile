@@ -9,7 +9,7 @@ RUN set -ex \
     && cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr . \
     && make \
     && make install
-RUN mkdir artifacts
+RUN mkdir artifacts && echo $PWD
 RUN cp -r --parents /usr/include/nanomsg/ artifacts \
     && cp --parents /usr/bin/nanocat artifacts \
     && cp --parents /usr/lib64/pkgconfig/nanomsg.pc artifacts \
