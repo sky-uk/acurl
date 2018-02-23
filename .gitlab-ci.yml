@@ -8,7 +8,7 @@ stages:
 
 build_nanomsg:
     stage: build_nanomsg
-    image: docker:17.03.0-ce
+    image: docker:17.12.0-ce
     script: 
         - mkdir artifacts
         - docker build -t build_nanomsg -f BuildNanomsgDockerfile .
