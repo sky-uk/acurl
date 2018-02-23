@@ -16,3 +16,7 @@ build_nanomsg:
     artifacts:
         when: always
         untracked: true
+variables:
+    GIT_SSL_NO_VERIFY: "1"
+    GIT_STRATEGY: clone
+    DOCKER_REPO: registry.id.intranet.sky
