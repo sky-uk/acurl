@@ -1,0 +1,17 @@
+FROM alpine:3.6 as nanomsg-builder
+RUN set -ex \
+    && apk add --no-cache gnupg libressl tar ca-certificates\
+    \
+    && wget https://github.com/nanomsg/nanomsg/archive/1.0.0.tar.gz \
+    && tar xvf 1.0.0.tar.gz \
+    && cd nanomsg-1.0.0 \
+    && apk add --no-cache cmake gcc make libc-dev coreutils \
+    && cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr . \
+    && make \
+    && make install
+RUN mkdir /artifacts
+COPY /usr/include/nanomsg/ /artifacts/usr/include/nanonmsg/
+COPY /usr/bin/nanocat /artifacts/usr/bin/
+COPY /usr/lib64/pkgconfig/nanomsg.pc /artifacts/usr/lib64
+COPY /usr/lib64/libnanomsg* /artifacts/usr/lib/
+

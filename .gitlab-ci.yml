@@ -1,0 +1,18 @@
+stages:
+    - build_nanomsg
+    - build_python_nanomsg
+    - build_python_msgpack
+    - build_python_acurl
+    - build_python_ujson
+    - build_python_uvloop
+build_nanomsg:
+    stage: build_nanomsg
+    image: docker:17.03.0-ce
+    script: 
+        - mkdir artifacts
+        - docker login -u"$DOCKER_USERNAME" -p"$DOCKER_PASSWORD" $DOCKER_REPO
+        - docker build -t build_nanomsg -f BuildNanomsgDockerfile .
+        - docker run -v artifacts/:/artifacts/ build_nanomsg /bin/true
+    artifacts:
+        when: always
+        untracked: true
