@@ -10,7 +10,7 @@ RUN set -ex \
     && make \
     && make install
 RUN mkdir artifacts
-RUN cp /usr/include/nanomsg/ artifacts/usr/include/nanonmsg/ \
+RUN cp -r /usr/include/nanomsg/ artifacts/usr/include/nanonmsg/ \
     && cp /usr/bin/nanocat artifacts/usr/bin/ \
     && cp /usr/lib64/pkgconfig/nanomsg.pc artifacts/usr/lib64 \
     && cp /usr/lib64/libnanomsg* artifacts/usr/lib/ \
