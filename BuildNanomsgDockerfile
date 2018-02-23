@@ -14,4 +14,4 @@ COPY /usr/include/nanomsg/ /artifacts/usr/include/nanonmsg/
 COPY /usr/bin/nanocat /artifacts/usr/bin/
 COPY /usr/lib64/pkgconfig/nanomsg.pc /artifacts/usr/lib64
 COPY /usr/lib64/libnanomsg* /artifacts/usr/lib/
-
+COPY /nanomsg-1.0-cp36-cp36m-linux_x86_64.whl /artifacts/
