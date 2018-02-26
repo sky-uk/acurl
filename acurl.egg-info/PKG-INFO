@@ -1,0 +1,17 @@
+Metadata-Version: 1.1
+Name: acurl
+Version: 0.1
+Summary: An async Curl library.
+Home-page: UNKNOWN
+Author: Tony Simpson
+Author-email: agjasimpson@gmail.com
+License: MIT
+Description-Content-Type: UNKNOWN
+Description: UNKNOWN
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
