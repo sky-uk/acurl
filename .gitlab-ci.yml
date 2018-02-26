@@ -8,8 +8,8 @@ stages:
     - build_python_ujson
     - build_python_uvloop
 
-services:
-    - docker:dind
+#services:
+#    - docker:dind
 
 build_nanomsg:
     stage: build_nanomsg
@@ -24,6 +24,6 @@ build_nanomsg:
         untracked: true
 
 variables:
-    DOCKER_DRIVER: overlay2
+#    DOCKER_DRIVER: overlay2
     GIT_SSL_NO_VERIFY: "1"
     GIT_STRATEGY: clone
