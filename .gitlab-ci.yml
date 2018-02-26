@@ -16,7 +16,8 @@ build_nanomsg:
     script: 
         - mkdir artifacts
         - docker build -t build_nanomsg -f BuildNanomsgDockerfile . 
-        - docker run --rm --privileged -v $PWD/artifacts:/artifacts build_nanomsg
+        - docker run --rm -v /build/$CI_PROJECT_PATH/artifacts:/artifacts build_nanomsg
+        - cp -R /build/$CI_PROJECT_PATH/artifacts/. artifacts/
     artifacts:
         when: always
         untracked: true
