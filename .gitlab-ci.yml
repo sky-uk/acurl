@@ -16,7 +16,7 @@ build_nanomsg:
     script: 
         - mkdir -p /build/$CI_PROJECT_PATH/artifacts 
         - docker build -t build_nanomsg -f BuildNanomsgDockerfile . 
-        - docker run -t --rm -v /build/$CI_PROJECT_PATH/artifacts:/artifacts build_nanomsgi
+        - docker run -t --rm -v /build/$CI_PROJECT_PATH/artifacts:/artifacts build_nanomsg
         - ls /build/$CI_PROJECT_PATH/artifacts
         - cp -R /build/$CI_PROJECT_PATH/artifacts/. artifacts/
         - ls artifacts 
