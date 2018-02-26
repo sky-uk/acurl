@@ -13,8 +13,7 @@ build_nanomsg:
         - mkdir artifacts
         - docker build -t build_nanomsg -f BuildNanomsgDockerfile . 
         - docker run -t --rm -v $PWD/artifacts:/artifacts build_nanomsg
-        - ls
-        - ls $PWD 
+        - echo "test" > artifacts/test.out 
     artifacts:
         when: always
         untracked: true
