@@ -18,8 +18,7 @@ build_nanomsg:
         - docker build -t build_nanomsg -f BuildNanomsgDockerfile . 
         - docker run -t --rm -v $CI_PROJECT_DIR/artifacts:/artifacts build_nanomsg
         - ls $CI_PROJECT_DIR/artifacts
-        - cp -R $CI_PROJECT_DIR/artifacts/. artifacts/
-        - ls artifacts 
+        - ls /mnt/disks/db 
     artifacts:
         when: always
         untracked: true
