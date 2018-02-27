@@ -16,7 +16,6 @@ build_nanomsg:
     stage: build_nanomsg
     script:
         - "docker build -t build_nanomsg -f BuildNanomsgDockerfile ."
-        - "docker run -t --rm build_nanomsg"
         - "docker tag build_nanomsg $DOCKER_REPO/build_nanomsg"
         - "docker push $DOCKER_REPO/build_nanomsg"
 variables:
