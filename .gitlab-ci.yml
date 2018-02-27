@@ -20,5 +20,5 @@ build_nanomsg:
 variables:
     GIT_SSL_NO_VERIFY: "1"
     DOCKER_REPO: "registry.id.intranet.sky:5001"
-    DOCKER_PREFIX: "/id-nft"
+    DOCKER_PREFIX: "id-nft"
     GIT_STRATEGY: clone
