@@ -19,6 +19,6 @@ build_nanomsg:
         - "docker push $DOCKER_REPO:$DOCKER_PREFIX/build_nanomsg"
 variables:
     GIT_SSL_NO_VERIFY: "1"
-    DOCKER_REPO: "registry.id.intranet.sky"
-    DOCKER_PREFIX: "5001/id-nft"
+    DOCKER_REPO: "registry.id.intranet.sky:5001"
+    DOCKER_PREFIX: "/id-nft"
     GIT_STRATEGY: clone
