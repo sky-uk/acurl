@@ -21,7 +21,7 @@ build_nanomsg:
 build_python_msgpack:
     stage: build_python_nanomsg
     script:
-        - "docker build --build_arg NANOMSG_BASE_IMAGE=$DOCKER_REPO/$DOCKER_PREFIX/build_nanomsg -t build_python_nanomsg -f BuildPythonNanomsgDockerfile ."
+        - "docker build --build-arg NANOMSG_BASE_IMAGE=$DOCKER_REPO/$DOCKER_PREFIX/build_nanomsg -t build_python_nanomsg -f BuildPythonNanomsgDockerfile ."
         - "docker tag build_python_nanomsg $DOCKER_REPO/$DOCKER_PREFIX/build_python_nanomsg"
         - "docker push $DOCKER_REPO/$DOCKER_PREFIX/build_python_nanomsg"
 
