@@ -11,8 +11,7 @@ stages:
 build_nanomsg:
     stage: build_nanomsg
     script:
-        - "docker login -u\"$DOCKER_USERNAME\" -p\"$DOCKER_PASSWORD\" hem.registry.id.intranet.sky:5001"
-        - "docker login -u\"$DOCKER_USERNAME\" -p\"$DOCKER_PASSWORD\" slo.registry.id.intranet.sky:5001"
+        - "docker login -u\"$DOCKER_USERNAME\" -p\"$DOCKER_PASSWORD\" $DOCKER_REPO"
         - "docker build -t build_nanomsg -f BuildNanomsgDockerfile ."
         - "docker tag build_nanomsg $DOCKER_REPO/build_nanomsg"
         - "docker push $DOCKER_REPO/build_nanomsg"
