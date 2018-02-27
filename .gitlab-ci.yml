@@ -8,14 +8,16 @@ stages:
     - build_python_ujson
     - build_python_uvloop
 
+before_script:
+    - "docker login -u\"$DOCKER_USERNAME\" -p\"$DOCKER_PASSWORD\" $DOCKER_REPO"
+
 build_nanomsg:
     stage: build_nanomsg
     script:
-        - "docker login -u\"$DOCKER_USERNAME\" -p\"$DOCKER_PASSWORD\" $DOCKER_REPO"
-        - "docker build -t build_nanomsg -f BuildNanomsgDockerfile ."
-        - "docker tag build_nanomsg $DOCKER_REPO/build_nanomsg"
-        - "docker push $DOCKER_REPO/build_nanomsg"
+        - "docker build -t $DOCKER_REPO:$DOCKER_PREFIX/build_nanomsg -f BuildNanomsgDockerfile ."
+        - "docker push -t $DOCKER_REPO:$DOCKER_PREFIX/build_nanomsg"
 variables:
     GIT_SSL_NO_VERIFY: "1"
-    DOCKER_REPO: registry.id.intranet.sky
+    DOCKER_REPO: "registry.id.intranet.sky"
+    DOCKER_PREFIX: "5001/id-nft/"
     GIT_STRATEGY: clone
