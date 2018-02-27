@@ -8,22 +8,16 @@ stages:
     - build_python_ujson
     - build_python_uvloop
 
-#services:
-#    - docker:dind
-
 build_nanomsg:
     stage: build_nanomsg
-    script: 
-        - mkdir -p $CI_PROJECT_DIR/artifacts 
-        - docker build -t build_nanomsg -f BuildNanomsgDockerfile . 
-        - docker run -t --rm -v $CI_PROJECT_DIR/artifacts:/artifacts build_nanomsg
-        - ls $CI_PROJECT_DIR/artifacts
-        - ls /mnt/disks/db 
-    artifacts:
-        when: always
-        untracked: true
-
+    script:
+        - "docker login -u\"$DOCKER_USERNAME\" -p\"$DOCKER_PASSWORD\" hem.registry.id.intranet.sky:5001"
+        - "docker login -u\"$DOCKER_USERNAME\" -p\"$DOCKER_PASSWORD\" slo.registry.id.intranet.sky:5001"
+        - "docker build -t build_nanomsg -f BuildNanomsgDockerfile ."
+        - "docker run -t --rm build_nanomsg"
+        - "docker tag build_nanomsg $DOCKER_REPO/build_nanomsg"
+        - "docker push $DOCKER_REPO/build_nanomsg"
 variables:
-#    DOCKER_DRIVER: overlay2
     GIT_SSL_NO_VERIFY: "1"
+    DOCKER_REPO: registry.id.intranet.sky
     GIT_STRATEGY: clone
