@@ -121,6 +121,7 @@ typedef struct {
     struct BufferNode *body_buffer_head;
     struct BufferNode *body_buffer_tail;
     int dummy;
+    char* ca;
 } AcRequestData;
 
 
@@ -550,6 +551,9 @@ void start_request(struct aeEventLoop *eventLoop, int fd, void *clientData, int 
     }
     curl_easy_setopt(rd->curl, CURLOPT_SSL_VERIFYPEER, 0L);
     curl_easy_setopt(rd->curl, CURLOPT_SSL_VERIFYHOST, 0L);
+    if (rd->ca != NULL) {
+	curl_easy_setopt(rd->curl, CURLOPT_CAPATH, rd->ca);
+    }
     curl_easy_setopt(rd->curl, CURLOPT_PRIVATE, rd);
     curl_easy_setopt(rd->curl, CURLOPT_WRITEFUNCTION, body_callback);
     curl_easy_setopt(rd->curl, CURLOPT_WRITEDATA, rd);
@@ -559,6 +563,8 @@ void start_request(struct aeEventLoop *eventLoop, int fd, void *clientData, int 
     rd->method = NULL;
     free(rd->url);
     rd->url = NULL;
+    free(rd->ca);
+    rd->ca = NULL;
     if(rd->auth != NULL) {
         free(rd->auth);
         rd->auth = NULL;
@@ -984,10 +990,11 @@ Session_request(Session *self, PyObject *args, PyObject *kwds)
     int req_data_len = 0;
     char *req_data_buf = NULL;
     int dummy;
-    
-    static char *kwlist[] = {"future", "method", "url", "headers", "auth", "cookies", "data", "dummy", NULL};
+    char *ca;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OssOOOz#p", kwlist, &future, &method, &url, &headers, &auth, &cookies, &req_data_buf, &req_data_len, &dummy)) {
+    static char *kwlist[] = {"future", "method", "url", "headers", "auth", "cookies", "data", "dummy", "ca", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OssOOOz#pz", kwlist, &future, &method, &url, &headers, &auth, &cookies, &req_data_buf, &req_data_len, &dummy, &ca)) {
         EXIT();
         return NULL;
     }
@@ -1047,11 +1054,12 @@ Session_request(Session *self, PyObject *args, PyObject *kwds)
     if(req_data_buf != NULL) {
         req_data_buf = strdup(req_data_buf);
     }
-
     rd->req_data_len = req_data_len;
     rd->req_data_buf = req_data_buf;
     rd->dummy = dummy;
-
+    if(ca != NULL) {
+        rd->ca = strdup(ca);
+    }
     write(self->loop->req_in_write, &rd, sizeof(AcRequestData *));
     DEBUG_PRINT("scheduling request");
     Py_INCREF(Py_None);
