@@ -121,7 +121,8 @@ typedef struct {
     struct BufferNode *body_buffer_head;
     struct BufferNode *body_buffer_tail;
     int dummy;
-    char* ca;
+    char* ca_cert;
+    char* ca_key;
 } AcRequestData;
 
 
@@ -378,6 +379,7 @@ static PyMethodDef Response_methods[] = {
     {"get_pretransfer_time", (PyCFunction)Response_get_pretransfer_time, METH_NOARGS, "Get elapsed time from start of request we've started to send the request"},
     {"get_starttransfer_time", (PyCFunction)Response_get_starttransfer_time, METH_NOARGS, "Get elapsed time from start of request until the first byte is recieved in seconds"},
     {"get_size_upload", (PyCFunction)Response_get_size_upload, METH_NOARGS, ""},
+
     {"get_size_download", (PyCFunction)Response_get_size_download, METH_NOARGS, ""},
     {"get_primary_ip", (PyCFunction)Response_get_primary_ip, METH_NOARGS, ""},
     {"get_cookielist", (PyCFunction)Response_get_cookielist, METH_NOARGS, ""},
@@ -551,8 +553,11 @@ void start_request(struct aeEventLoop *eventLoop, int fd, void *clientData, int 
     }
     curl_easy_setopt(rd->curl, CURLOPT_SSL_VERIFYPEER, 0L);
     curl_easy_setopt(rd->curl, CURLOPT_SSL_VERIFYHOST, 0L);
-    if (rd->ca != NULL) {
-	curl_easy_setopt(rd->curl, CURLOPT_CAPATH, rd->ca);
+    if ((rd->ca_key != NULL) && (rd->ca_cert != NULL)) {
+	DEBUG_PRINT("key=%s", rd->ca_key);
+	DEBUG_PRINT("cert=%s", rd->ca_cert);
+	curl_easy_setopt(rd->curl, CURLOPT_SSLKEY, rd->ca_key);
+        curl_easy_setopt(rd->curl, CURLOPT_SSLCERT, rd->ca_cert);
     }
     curl_easy_setopt(rd->curl, CURLOPT_PRIVATE, rd);
     curl_easy_setopt(rd->curl, CURLOPT_WRITEFUNCTION, body_callback);
@@ -563,11 +568,17 @@ void start_request(struct aeEventLoop *eventLoop, int fd, void *clientData, int 
     rd->method = NULL;
     free(rd->url);
     rd->url = NULL;
-    free(rd->ca);
-    rd->ca = NULL;
     if(rd->auth != NULL) {
         free(rd->auth);
         rd->auth = NULL;
+    }
+    if(rd->ca_cert != NULL) {
+	free(rd->ca_cert);
+	rd->ca_cert = NULL;
+    }
+    if(rd->ca_key != NULL) {
+        free(rd->ca_key);
+        rd->ca_key = NULL;
     }
     free(rd->cookies_str);
     if(rd->dummy) {
@@ -986,15 +997,15 @@ Session_request(Session *self, PyObject *args, PyObject *kwds)
     PyObject *future;
     PyObject *headers;
     PyObject *auth;
+    PyObject *cert;
     PyObject *cookies;
     int req_data_len = 0;
     char *req_data_buf = NULL;
     int dummy;
-    char *ca;
 
-    static char *kwlist[] = {"future", "method", "url", "headers", "auth", "cookies", "data", "dummy", "ca", NULL};
+    static char *kwlist[] = {"future", "method", "url", "headers", "auth", "cookies", "data", "dummy", "cert", NULL};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OssOOOz#pz", kwlist, &future, &method, &url, &headers, &auth, &cookies, &req_data_buf, &req_data_len, &dummy, &ca)) {
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "OssOOOz#pO", kwlist, &future, &method, &url, &headers, &auth, &cookies, &req_data_buf, &req_data_len, &dummy, &cert)) {
         EXIT();
         return NULL;
     }
@@ -1017,13 +1028,28 @@ Session_request(Session *self, PyObject *args, PyObject *kwds)
     }
     if(auth != Py_None) {
         if(!PyTuple_CheckExact(auth) || PyTuple_GET_SIZE(auth) != 2 || !PyUnicode_CheckExact(PyTuple_GET_ITEM(auth, 0)) || !PyUnicode_CheckExact(PyTuple_GET_ITEM(auth, 1))) {
-            PyErr_SetString(PyExc_ValueError, "auth should be a tuple of strings (username, password) or None");
+	    PyErr_SetString(PyExc_ValueError, "auth should be a tuple of strings (username, password) or None");
             goto error_cleanup;
         }
         char *username = PyUnicode_AsUTF8(PyTuple_GET_ITEM(auth, 0));
         char *password = PyUnicode_AsUTF8(PyTuple_GET_ITEM(auth, 1));
         rd->auth = (char*)malloc(strlen(username) + 1 + strlen(password) + 1);
         sprintf(rd->auth, "%s:%s", username, password);
+    }
+    if(cert != Py_None) {
+	if(!PyTuple_CheckExact(cert) || PyTuple_GET_SIZE(cert) != 2 || !PyUnicode_CheckExact(PyTuple_GET_ITEM(cert, 0)) || !PyUnicode_CheckExact(PyTuple_GET_ITEM(cert, 1))) {	
+            PyErr_SetString(PyExc_ValueError, "cert should be a tuple of strings (certificate path, key path) or None");
+            goto error_cleanup;
+        }
+        DEBUG_PRINT("PRE variables");
+        char *cert_path = PyUnicode_AsUTF8(PyTuple_GET_ITEM(cert, 0));
+        char *key_path = PyUnicode_AsUTF8(PyTuple_GET_ITEM(cert, 1));
+        DEBUG_PRINT("PRE malloc");
+        rd->ca_cert = (char*)malloc(strlen(cert_path) + 1);
+        rd->ca_key = (char*)malloc(strlen(key_path) + 1);
+        DEBUG_PRINT("PRE sprintf");
+        sprintf(rd->ca_cert, "%s", cert_path);
+        sprintf(rd->ca_key, "%s", key_path);
     }
     if(cookies != Py_None) {
         Py_INCREF(cookies);
@@ -1044,7 +1070,6 @@ Session_request(Session *self, PyObject *args, PyObject *kwds)
             }
         }
     }
-    
     Py_INCREF(self);
     rd->session = self;
     Py_INCREF(future);
@@ -1057,9 +1082,6 @@ Session_request(Session *self, PyObject *args, PyObject *kwds)
     rd->req_data_len = req_data_len;
     rd->req_data_buf = req_data_buf;
     rd->dummy = dummy;
-    if(ca != NULL) {
-        rd->ca = strdup(ca);
-    }
     write(self->loop->req_in_write, &rd, sizeof(AcRequestData *));
     DEBUG_PRINT("scheduling request");
     Py_INCREF(Py_None);
@@ -1072,6 +1094,12 @@ Session_request(Session *self, PyObject *args, PyObject *kwds)
     }
     if(rd->auth) {
         free(rd->auth);
+    }
+    if(rd->ca_cert) {
+	free(rd->ca_cert);
+    }
+    if(rd->ca_key) {
+        free(rd->ca_key);
     }
     if(rd->cookies) {
         Py_DECREF(rd->cookies);
