@@ -131,15 +131,16 @@ def _cookie_list_to_cookie_dict(cookie_list):
 
 
 class Request:
-    __slots__ = '_method _url _header_list _cookie_list _auth _data'.split()
+    __slots__ = '_method _url _header_list _cookie_list _auth _data _cert'.split()
 
-    def __init__(self, method, url, header_list, cookie_list, auth, data):
+    def __init__(self, method, url, header_list, cookie_list, auth, data, cert):
         self._method = method
         self._url = url
         self._header_list = header_list
         self._cookie_list = cookie_list
         self._auth = auth
         self._data = data
+        self._cert = cert
 
     @property
     def method(self):
@@ -172,6 +173,10 @@ class Request:
     @property
     def data(self):
         return self._data
+
+    @property
+    def cert(self):
+        return self._cert
 
 
 class Response:
@@ -333,7 +338,7 @@ class Session:
     async def options(self, url, **kwargs):
         return await self.request('OPTIONS', url, **kwargs)
 
-    async def request(self, method, url, headers=None, headers_list=None, cookies=None, cookie_list=None, auth=None, data=None, json=None, allow_redirects=True, max_redirects=5):
+    async def request(self, method, url, headers=None, headers_list=None, cookies=None, cookie_list=None, auth=None, data=None, json=None, cert=None, allow_redirects=True, max_redirects=5):
         if json is not None:
             if data is not None:
                 raise ValueError('use only one or none of data or json')
@@ -359,17 +364,17 @@ class Session:
             for k, v in cookies.items():
                 cookie_list.append(session_cookie_for_url(url, k, v))
 
-        return await self._request(method, url, tuple(headers_list) if headers_list else None, tuple(cookie_list) if cookie_list else None, auth, data, allow_redirects, max_redirects)
+        return await self._request(method, url, tuple(headers_list) if headers_list else None, tuple(cookie_list) if cookie_list else None, auth, data, cert, allow_redirects, max_redirects)
 
     def set_response_callback(self, callback):
         self._response_callback = callback
 
-    async def _request(self, method, url, header_tuple, cookie_tuple, auth, data, allow_redirects, remaining_redirects):
+    async def _request(self, method, url, header_tuple, cookie_tuple, auth, data, cert, allow_redirects, remaining_redirects):
         start_time = time.time()
-        request = Request(method, url, header_tuple, cookie_tuple, auth, data)
+        request = Request(method, url, header_tuple, cookie_tuple, auth, data, cert)
         
         future = self._loop.create_future()
-        self._session.request(future, method, url, headers=header_tuple, cookies=tuple(c.format() for c in cookie_tuple) if cookie_tuple else None, auth=auth, data=data, dummy=False)
+        self._session.request(future, method, url, headers=header_tuple, cookies=tuple(c.format() for c in cookie_tuple) if cookie_tuple else None, auth=auth, data=data, dummy=False, cert=cert)
         response = Response(request, await future, start_time)
         
         if self._response_callback:
@@ -378,16 +383,16 @@ class Session:
             if remaining_redirects == 0:
                 raise RequestError('Max Redirects')
             elif response.status_code in {301, 302, 303}:
-                redir_response = await self._request('GET', response.redirect_url, header_tuple, None, auth, None, allow_redirects, remaining_redirects - 1)
+                redir_response = await self._request('GET', response.redirect_url, header_tuple, None, auth, None, cert, allow_redirects, remaining_redirects - 1)
             else:
-                redir_response = await self._request(method, response.redirect_url, header_tuple, None, auth, data, allow_redirects, remaining_redirects - 1)
+                redir_response = await self._request(method, response.redirect_url, header_tuple, None, auth, data, cert, allow_redirects, remaining_redirects - 1)
             redir_response._prev = response
             return redir_response
         return response
 
     async def _dummy_request(self, cookies):
         future = asyncio.futures.Future(loop=self._loop)
-        self._session.request(future, 'GET', '', headers=tuple(), cookies=cookies, auth=None, data=None, dummy=True)
+        self._session.request(future, 'GET', '', headers=tuple(), cookies=cookies, auth=None, data=None, dummy=True, cert=None)
         return await future
 
     async def erase_all_cookies(self):
