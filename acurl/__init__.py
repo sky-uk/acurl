@@ -2,9 +2,9 @@ import _acurl
 import threading
 import asyncio
 import ujson
-from collections import namedtuple
 import time
 from urllib.parse import urlparse
+
 
 class RequestError(Exception):
     pass
@@ -65,7 +65,7 @@ class Cookie:
     @property
     def expiration(self):
         return self._expiration
-    
+
     @property
     def name(self):
         return self._name
@@ -122,7 +122,7 @@ def session_cookie_for_url(url, name, value, http_only=False, include_subdomains
     scheme, netloc, path, params, query, fragment = urlparse(url)
     if not include_url_path:
         path = '/'
-    #TODO do we need to sanitize netloc for IP and ports?
+    # TODO do we need to sanitize netloc for IP and ports?
     return Cookie(http_only, '.' + netloc, include_subdomains, path, is_secure, 0, name, value)
 
 
@@ -157,7 +157,7 @@ class Request:
     @property
     def headers(self):
         return dict(header.split(': ', 1) for header in self.header_list)
-    
+
     @property
     def cookie_list(self):
         return self._cookie_list
@@ -196,8 +196,8 @@ class Response:
         return self._resp.get_response_code()
 
     response_code = status_code
-    
-    @property 
+
+    @property
     def url(self):
         return self._resp.get_effective_url()
 
@@ -214,7 +214,7 @@ class Response:
     @property
     def total_time(self):
         return self._resp.get_total_time()
-    
+
     @property
     def namelookup_time(self):
         return self._resp.get_namelookup_time()
@@ -270,7 +270,7 @@ class Response:
         if not hasattr(self, '_body'):
             self._body = b''.join(self._resp.get_body())
         return self._body
-    
+
     @property
     def encoding(self):
         if not hasattr(self, '_encoding'):
@@ -300,7 +300,7 @@ class Response:
         if not hasattr(self, '_headers'):
             self._headers = dict(self.headers_tuple)
         return self._headers
-    
+
     @property
     def headers_tuple(self):
         if not hasattr(self, '_headers_tuple'):
@@ -372,11 +372,11 @@ class Session:
     async def _request(self, method, url, header_tuple, cookie_tuple, auth, data, cert, allow_redirects, remaining_redirects):
         start_time = time.time()
         request = Request(method, url, header_tuple, cookie_tuple, auth, data, cert)
-        
+
         future = self._loop.create_future()
         self._session.request(future, method, url, headers=header_tuple, cookies=tuple(c.format() for c in cookie_tuple) if cookie_tuple else None, auth=auth, data=data, dummy=False, cert=cert)
         response = Response(request, await future, start_time)
-        
+
         if self._response_callback:
             self._response_callback(response)
         if allow_redirects and (300 <= response.status_code < 400) and response.redirect_url is not None:
@@ -408,10 +408,11 @@ class Session:
     async def add_cookie_list(self, cookie_list):
         await self._dummy_request(tuple(c.format() for c in cookie_list))
 
+
 class EventLoop:
     def __init__(self, loop=None, same_thread=False):
         self._loop = loop if loop is not None else asyncio.get_event_loop()
-        self._ae_loop =  _acurl.EventLoop()
+        self._ae_loop = _acurl.EventLoop()
         self._running = False
         # Completed requests end up on the fd pipe, complete callback called
         self._loop.add_reader(self._ae_loop.get_out_fd(), self._complete)
@@ -451,5 +452,3 @@ class EventLoop:
 
     def session(self):
         return Session(self._ae_loop, self._loop)
-
-
