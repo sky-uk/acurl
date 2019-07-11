@@ -17,7 +17,7 @@
     #include <sys/syscall.h>
     #define DEBUG_PRINT(fmt, args...) fprintf(stderr, "DEBUG: %s:%d:%s() tid=%ld: " fmt "\n", __FILE__, __LINE__, __func__, (long)syscall(SYS_gettid), ##args)
 #else
-    #define DEBUG_PRINT(fmt, args...) 
+    #define DEBUG_PRINT(fmt, args...)
 #endif
 
 #include <time.h>
@@ -92,7 +92,7 @@ typedef struct {
     CURLSH *shared;
 } Session;
 
-/* Node in a linked list structure. Used for piecing together sections of resposnes e.g. headers and body. 
+/* Node in a linked list structure. Used for piecing together sections of resposnes e.g. headers and body.
  * Possible optimisation to have a memory pool for buffer nodes so they aren't being malloc'ed all the time */
 
 struct BufferNode {
@@ -163,7 +163,7 @@ static void Response_dealloc(Response *self)
 }
 
 
-PyObject * get_buffer_as_pylist(struct BufferNode *start) 
+PyObject * get_buffer_as_pylist(struct BufferNode *start)
 {
     ENTER();
     int i = 0, len = 0;
@@ -189,7 +189,7 @@ PyObject * get_buffer_as_pylist(struct BufferNode *start)
 
 static PyObject *
 Response_get_header(Response *self, PyObject *args)
-{   
+{
     ENTER();
     DEBUG_PRINT("");
     PyObject *rtn = get_buffer_as_pylist(self->header_buffer);
@@ -438,14 +438,14 @@ static PyTypeObject ResponseType = {
 
 /* When at least one request has completed, write completed responses onto completion queue*/
 
-void response_complete(EventLoop *loop) 
+void response_complete(EventLoop *loop)
 {
     ENTER();
     DEBUG_PRINT("loop=%p", loop);
     int remaining_in_queue = 1;
     AcRequestData *rd;
     CURLMsg *msg;
-    while(remaining_in_queue > 0) 
+    while(remaining_in_queue > 0)
     {
         DEBUG_PRINT("calling curl_multi_info_read");
         msg = curl_multi_info_read(loop->multi, &remaining_in_queue);
@@ -469,7 +469,7 @@ void response_complete(EventLoop *loop)
 }
 
 
-void socket_action_and_response_complete(EventLoop *loop, curl_socket_t socket, int ev_bitmask) 
+void socket_action_and_response_complete(EventLoop *loop, curl_socket_t socket, int ev_bitmask)
 {
     ENTER();
     DEBUG_PRINT("loop=%p socket=%d ev_bitmask=%d", loop, socket, ev_bitmask);
@@ -626,14 +626,14 @@ void socket_event(struct aeEventLoop *eventLoop, int fd, void *clientData, int m
     ENTER();
     DEBUG_PRINT("eventloop=%p fd=%d clientData=%p mask=%d (readable=%d writable=%d)", eventLoop, fd, clientData, mask, mask & AE_READABLE, mask & AE_WRITABLE);
     int ev_bitmask = 0;
-    if(mask & AE_READABLE) 
+    if(mask & AE_READABLE)
     {
         ev_bitmask |= CURL_CSELECT_IN;
     }
     if(mask & AE_WRITABLE)
     {
          ev_bitmask |= CURL_CSELECT_OUT;
-    } 
+    }
     socket_action_and_response_complete((EventLoop*)clientData, (curl_socket_t)fd, ev_bitmask);
     EXIT();
 }
@@ -668,11 +668,11 @@ int socket_callback(CURL *easy, curl_socket_t s, int what, void *userp, void *so
             break;
     };
     EXIT();
-    return 0; 
+    return 0;
 }
 
 
-int timeout(struct aeEventLoop *eventLoop, long long id, void *clientData) 
+int timeout(struct aeEventLoop *eventLoop, long long id, void *clientData)
 {
     ENTER();
     DEBUG_PRINT("");
@@ -867,7 +867,7 @@ Eventloop_get_completed(PyObject *self, PyObject *args)
             free_buffer_nodes(rd->body_buffer_head);
             curl_easy_cleanup(rd->curl);
             Py_DECREF(rd->session);
-            
+
             PyTuple_SET_ITEM(tuple, 0, error);
             Py_INCREF(Py_None);
             PyTuple_SET_ITEM(tuple, 1, Py_None);
@@ -950,7 +950,7 @@ Session_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     ENTER();
     Session *self;
     EventLoop *loop;
-    
+
     static char *kwlist[] = {"loop", NULL};
     if (! PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &loop)) {
         EXIT();
@@ -962,7 +962,7 @@ Session_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
         EXIT();
         return NULL;
     }
-    
+
     Py_INCREF(loop);
     self->loop = loop;
     self->shared = curl_share_init();
@@ -1007,7 +1007,7 @@ Session_request(Session *self, PyObject *args, PyObject *kwds)
         EXIT();
         return NULL;
     }
-    
+
     AcRequestData *rd = (AcRequestData *)malloc(sizeof(AcRequestData));
     REQUEST_TRACE_PRINT("Session_request", rd);
     memset(rd, 0, sizeof(AcRequestData));
@@ -1085,7 +1085,7 @@ Session_request(Session *self, PyObject *args, PyObject *kwds)
     Py_INCREF(Py_None);
     EXIT();
     return Py_None;
-    
+
     error_cleanup:
     if(rd->headers) {
         curl_slist_free_all(rd->headers);
@@ -1178,7 +1178,7 @@ PyMODINIT_FUNC
 PyInit__acurl(void)
 {
     PyObject* m;
-    
+
     if (PyType_Ready(&SessionType) < 0)
         return NULL;
 
@@ -1199,6 +1199,6 @@ PyInit__acurl(void)
         Py_INCREF(&ResponseType);
         PyModule_AddObject(m, "Response", (PyObject *)&ResponseType);
     }
-    
+
     return m;
 }

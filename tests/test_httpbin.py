@@ -61,5 +61,3 @@ def test_redirect():
     url = 'https://httpbin.org/ip'
     r = _await(s.get('https://httpbin.org/redirect-to?' + urlencode({'url': url})))
     assert r.url == url
-
-    
