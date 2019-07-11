@@ -364,7 +364,10 @@ class Session:
             for k, v in cookies.items():
                 cookie_list.append(session_cookie_for_url(url, k, v))
 
-        return await self._request(method, url, tuple(headers_list) if headers_list else None, tuple(cookie_list) if cookie_list else None, auth, data, cert, allow_redirects, max_redirects)
+        return await self._request(
+            method, url, tuple(headers_list), tuple(cookie_list),
+            auth, data, cert, allow_redirects, max_redirects
+        )
 
     def set_response_callback(self, callback):
         self._response_callback = callback
