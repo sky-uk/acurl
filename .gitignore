@@ -15,7 +15,7 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
+__pycache__/
 
 # C
 *.so
-/__pycache__/
